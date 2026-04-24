@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Cost Optimizer — Cloud Intelligence Dashboard</title>
+    <meta name="description" content="Real-time AWS cost optimization dashboard. Find wasted resources, track spending trends, and save money.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Animated particle canvas background -->
+    <canvas id="particle-canvas"></canvas>
+    <!-- SVG gradient defs for budget gauge -->
+    <svg style="position:absolute;width:0;height:0">
+        <defs>
+            <linearGradient id="budgetGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#10b981"/>
+                <stop offset="100%" style="stop-color:#06b6d4"/>
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="url(#logoGrad)" stroke-width="2">
+                    <defs>
+                        <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#6366f1"/>
+                            <stop offset="100%" style="stop-color:#06b6d4"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+                </svg>
+            </div>
+            <span class="sidebar-logo-text">CostOptimizer</span>
+        </div>
+
+        <div class="sidebar-nav">
+            <button class="nav-item active" data-tab="home" id="nav-home" onclick="switchTab('home')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span>Home</span>
+            </button>
+            <button class="nav-item" data-tab="dashboard" id="nav-dashboard" onclick="switchTab('dashboard')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                <span>Dashboard</span>
+            </button>
+            <button class="nav-item" data-tab="resources" id="nav-resources" onclick="switchTab('resources')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                <span>Resources</span>
+            </button>
+            <button class="nav-item" data-tab="analytics" id="nav-analytics" onclick="switchTab('analytics')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                <span>Analytics</span>
+            </button>
+            <button class="nav-item" data-tab="history" id="nav-history" onclick="switchTab('history')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>History</span>
+            </button>
+            <button class="nav-item" data-tab="alerts" id="nav-alerts" onclick="switchTab('alerts')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <span>Alerts</span>
+            </button>
+            <button class="nav-item" data-tab="settings" id="nav-settings" onclick="switchTab('settings')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <span>Settings</span>
+            </button>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-status">
+                <span class="pulse-dot"></span>
+                <span id="sidebar-status-text">System Online</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content" id="main-content">
+
+        <!-- ==================== HOME TAB ==================== -->
+        <section class="tab-content active" id="tab-home">
+            <div class="hero">
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <span class="hero-badge-dot"></span>
+                        AWS Cloud Intelligence Platform
+                    </div>
+                    <h1 class="hero-title">
+                        Stop Wasting Money on
+                        <span class="hero-gradient-text">Idle Cloud Resources</span>
+                    </h1>
+                    <p class="hero-description">
+                        Scan your AWS infrastructure, detect unused resources, and get AI-powered
+                        recommendations to cut costs — all in real time.
+                    </p>
+                    <div class="hero-actions">
+                        <button class="btn btn-hero-primary" onclick="switchTab('dashboard')">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                            Open Dashboard
+                        </button>
+                        <button class="btn btn-hero-secondary" onclick="switchTab('resources')">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            View Resources
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Animated hero visual -->
+                <div class="hero-visual">
+                    <div class="hero-orbit">
+                        <div class="orbit-ring orbit-ring-1">
+                            <div class="orbit-dot orbit-dot-1">💾</div>
+                        </div>
+                        <div class="orbit-ring orbit-ring-2">
+                            <div class="orbit-dot orbit-dot-2">🖥️</div>
+                        </div>
+                        <div class="orbit-ring orbit-ring-3">
+                            <div class="orbit-dot orbit-dot-3">🌐</div>
+                        </div>
+                        <div class="hero-center-icon">☁️</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature cards -->
+            <div class="feature-grid">
+                <div class="feature-card" onclick="switchTab('dashboard')">
+                    <div class="feature-icon feature-icon-1">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    </div>
+                    <h3 class="feature-title">Real-Time Monitoring</h3>
+                    <p class="feature-desc">Track cost trends across scans with interactive charts and live data.</p>
+                    <span class="feature-arrow">&rarr;</span>
+                </div>
+                <div class="feature-card" onclick="switchTab('resources')">
+                    <div class="feature-icon feature-icon-2">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                    </div>
+                    <h3 class="feature-title">Resource Scanner</h3>
+                    <p class="feature-desc">Detect unattached EBS, stopped EC2, unused EIPs, and old snapshots.</p>
+                    <span class="feature-arrow">&rarr;</span>
+                </div>
+                <div class="feature-card" onclick="switchTab('analytics')">
+                    <div class="feature-icon feature-icon-3">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                    </div>
+                    <h3 class="feature-title">Cost Analytics</h3>
+                    <p class="feature-desc">Breakdown waste by service type with severity levels and projections.</p>
+                    <span class="feature-arrow">&rarr;</span>
+                </div>
+                <div class="feature-card" onclick="switchTab('history')">
+                    <div class="feature-icon feature-icon-4">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    </div>
+                    <h3 class="feature-title">Scan History</h3>
+                    <p class="feature-desc">Review past scans, compare trends, and track optimization progress.</p>
+                    <span class="feature-arrow">&rarr;</span>
+                </div>
+            </div>
+
+            <!-- Live stats ticker -->
+            <div class="home-stats-bar">
+                <div class="home-stat">
+                    <span class="home-stat-value" id="home-waste">$0.00</span>
+                    <span class="home-stat-label">Monthly Waste</span>
+                </div>
+                <div class="home-stat-divider"></div>
+                <div class="home-stat">
+                    <span class="home-stat-value" id="home-resources">0</span>
+                    <span class="home-stat-label">Resources Detected</span>
+                </div>
+                <div class="home-stat-divider"></div>
+                <div class="home-stat">
+                    <span class="home-stat-value" id="home-annual">$0.00</span>
+                    <span class="home-stat-label">Annual Savings Potential</span>
+                </div>
+                <div class="home-stat-divider"></div>
+                <div class="home-stat">
+                    <span class="home-stat-value" id="home-scans">0</span>
+                    <span class="home-stat-label">Total Scans</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== DASHBOARD TAB ==================== -->
+        <section class="tab-content" id="tab-dashboard">
+            <div class="tab-header">
+                <div>
+                    <h2 class="tab-title">Dashboard</h2>
+                    <p class="tab-subtitle">Overview of your AWS cost optimization status</p>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-secondary" id="refresh-btn" onclick="loadDashboard()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                        Refresh
+                    </button>
+                    <button class="btn btn-primary" id="run-scan-btn" onclick="runScan()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        Run Scan Now
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card stat-card-waste" id="card-waste">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-content">
+                        <span class="stat-label">Monthly Waste</span>
+                        <span class="stat-value" id="stat-waste">$0.00</span>
+                        <span class="stat-trend" id="stat-trend"></span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-resources" id="card-resources">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-content">
+                        <span class="stat-label">Resources Found</span>
+                        <span class="stat-value" id="stat-resources">0</span>
+                        <span class="stat-sub">wasted resources</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-annual" id="card-annual">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-content">
+                        <span class="stat-label">Annual Projection</span>
+                        <span class="stat-value" id="stat-annual">$0.00</span>
+                        <span class="stat-sub">potential savings</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-scans" id="card-scans">
+                    <div class="stat-icon">🔍</div>
+                    <div class="stat-content">
+                        <span class="stat-label">Total Scans</span>
+                        <span class="stat-value" id="stat-scans">0</span>
+                        <span class="stat-sub">completed</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Budget Meter -->
+            <div class="budget-card" id="budget-card">
+                <div class="budget-card-left">
+                    <div class="budget-gauge-container">
+                        <svg class="budget-gauge" viewBox="0 0 120 120">
+                            <circle class="budget-gauge-bg" cx="60" cy="60" r="52" />
+                            <circle class="budget-gauge-fill" id="budget-gauge-fill" cx="60" cy="60" r="52"
+                                stroke-dasharray="326.73" stroke-dashoffset="326.73" />
+                        </svg>
+                        <div class="budget-gauge-center">
+                            <span class="budget-gauge-pct" id="budget-pct">0%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="budget-card-middle">
+                    <div class="budget-card-header">
+                        <h3 class="budget-card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            Budget Monitor
+                        </h3>
+                        <span class="budget-status-badge" id="budget-status-badge">OK</span>
+                    </div>
+                    <div class="budget-bar-container">
+                        <div class="budget-bar-track">
+                            <div class="budget-bar-fill" id="budget-bar-fill" style="width:0%"></div>
+                            <div class="budget-bar-marker" id="budget-bar-marker" style="left:100%">
+                                <span class="budget-bar-marker-label" id="budget-marker-label">$50</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="budget-details-row">
+                        <div class="budget-detail">
+                            <span class="budget-detail-label">Current Waste</span>
+                            <span class="budget-detail-value" id="budget-waste">$0.00</span>
+                        </div>
+                        <div class="budget-detail">
+                            <span class="budget-detail-label">Threshold</span>
+                            <span class="budget-detail-value" id="budget-threshold">$50.00</span>
+                        </div>
+                        <div class="budget-detail">
+                            <span class="budget-detail-label">Over By</span>
+                            <span class="budget-detail-value budget-detail-overage" id="budget-overage">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="budget-card-right">
+                    <div class="budget-alert-box" id="budget-alert-box">
+                        <span class="budget-alert-icon" id="budget-alert-icon">✅</span>
+                        <span class="budget-alert-text" id="budget-alert-text">Under budget</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-row">
+                <div class="card chart-card" id="trend-chart-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                            Cost Trend
+                        </h3>
+                        <span class="card-badge">Last 30 scans</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+                <div class="card chart-card-small" id="breakdown-chart-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+                            Waste Breakdown
+                        </h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="breakdownChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== RESOURCES TAB ==================== -->
+        <section class="tab-content" id="tab-resources">
+            <div class="tab-header">
+                <div>
+                    <h2 class="tab-title">Resources</h2>
+                    <p class="tab-subtitle">All detected wasted resources from your latest scan</p>
+                </div>
+                <button class="btn btn-outline" id="export-btn" onclick="exportCSV()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Export CSV
+                </button>
+            </div>
+
+            <!-- Resource summary mini cards -->
+            <div class="resource-summary-grid">
+                <div class="resource-summary-card" id="summary-ebs">
+                    <span class="resource-summary-icon">💾</span>
+                    <span class="resource-summary-type">EBS Volumes</span>
+                    <span class="resource-summary-count" id="count-ebs">0</span>
+                </div>
+                <div class="resource-summary-card" id="summary-ec2">
+                    <span class="resource-summary-icon">🖥️</span>
+                    <span class="resource-summary-type">EC2 Instances</span>
+                    <span class="resource-summary-count" id="count-ec2">0</span>
+                </div>
+                <div class="resource-summary-card" id="summary-eip">
+                    <span class="resource-summary-icon">🌐</span>
+                    <span class="resource-summary-type">Elastic IPs</span>
+                    <span class="resource-summary-count" id="count-eip">0</span>
+                </div>
+                <div class="resource-summary-card" id="summary-snap">
+                    <span class="resource-summary-icon">📸</span>
+                    <span class="resource-summary-type">Snapshots</span>
+                    <span class="resource-summary-count" id="count-snap">0</span>
+                </div>
+            </div>
+
+            <!-- Filters + Table -->
+            <div class="card table-card">
+                <div class="card-header">
+                    <div class="filter-group">
+                        <button class="filter-btn active" data-filter="all" id="filter-all">All</button>
+                        <button class="filter-btn" data-filter="EBS" id="filter-ebs">EBS</button>
+                        <button class="filter-btn" data-filter="EC2" id="filter-ec2">EC2</button>
+                        <button class="filter-btn" data-filter="ElasticIP" id="filter-eip">EIP</button>
+                        <button class="filter-btn" data-filter="Snapshot" id="filter-snap">Snapshot</button>
+                    </div>
+                    <div class="search-box">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="search-input" placeholder="Search resources..." oninput="onSearch(this.value)">
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table" id="resources-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="type" id="sort-type">Type</th>
+                                <th class="sortable" data-sort="id" id="sort-id">Resource ID</th>
+                                <th class="sortable" data-sort="detail" id="sort-detail">Detail</th>
+                                <th class="sortable" data-sort="waste" id="sort-waste">Cost/Month</th>
+                                <th class="sortable" data-sort="severity" id="sort-severity">Severity</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resources-tbody">
+                            <tr class="empty-row"><td colspan="6">
+                                <div class="empty-state">
+                                    <span class="empty-icon">📭</span>
+                                    <p>No scan data yet</p>
+                                    <code>python main.py --scan</code>
+                                </div>
+                            </td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== ANALYTICS TAB ==================== -->
+        <section class="tab-content" id="tab-analytics">
+            <div class="tab-header">
+                <div>
+                    <h2 class="tab-title">Analytics</h2>
+                    <p class="tab-subtitle">Detailed cost breakdown and service-level analysis</p>
+                </div>
+            </div>
+
+            <div class="analytics-grid">
+                <!-- Service Breakdown Cards -->
+                <div class="card analytics-breakdown-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                            Service Breakdown
+                        </h3>
+                    </div>
+                    <div class="chart-container chart-container-tall">
+                        <canvas id="serviceBarChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Severity Distribution -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            Severity Distribution
+                        </h3>
+                    </div>
+                    <div class="severity-bars" id="severity-bars">
+                        <div class="severity-bar-row">
+                            <span class="severity-bar-label">🔴 High ($50+)</span>
+                            <div class="severity-bar-track">
+                                <div class="severity-bar-fill severity-bar-high" id="sev-high-bar" style="width: 0%"></div>
+                            </div>
+                            <span class="severity-bar-count" id="sev-high-count">0</span>
+                        </div>
+                        <div class="severity-bar-row">
+                            <span class="severity-bar-label">🟡 Medium ($10-50)</span>
+                            <div class="severity-bar-track">
+                                <div class="severity-bar-fill severity-bar-medium" id="sev-med-bar" style="width: 0%"></div>
+                            </div>
+                            <span class="severity-bar-count" id="sev-med-count">0</span>
+                        </div>
+                        <div class="severity-bar-row">
+                            <span class="severity-bar-label">🟢 Low (&lt;$10)</span>
+                            <div class="severity-bar-track">
+                                <div class="severity-bar-fill severity-bar-low" id="sev-low-bar" style="width: 0%"></div>
+                            </div>
+                            <span class="severity-bar-count" id="sev-low-count">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cost projection -->
+                <div class="card analytics-projection-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            Savings Projection
+                        </h3>
+                    </div>
+                    <div class="projection-grid">
+                        <div class="projection-item">
+                            <span class="projection-period">Monthly</span>
+                            <span class="projection-amount" id="proj-monthly">$0.00</span>
+                        </div>
+                        <div class="projection-item">
+                            <span class="projection-period">Quarterly</span>
+                            <span class="projection-amount" id="proj-quarterly">$0.00</span>
+                        </div>
+                        <div class="projection-item">
+                            <span class="projection-period">Annual</span>
+                            <span class="projection-amount projection-amount-big" id="proj-annual">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== HISTORY TAB ==================== -->
+        <section class="tab-content" id="tab-history">
+            <div class="tab-header">
+                <div>
+                    <h2 class="tab-title">Scan History</h2>
+                    <p class="tab-subtitle">Review past scans and compare optimization progress</p>
+                </div>
+            </div>
+
+            <div class="history-timeline" id="history-timeline">
+                <div class="empty-state">
+                    <span class="empty-icon">📋</span>
+                    <p>No scan history yet</p>
+                    <code>python main.py --scan</code>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== ALERTS TAB ==================== -->
+        <section class="tab-content" id="tab-alerts">
+            <div class="tab-header">
+                <div>
+                    <h2 class="tab-title">Alerts</h2>
+                    <p class="tab-subtitle">Budget violation history and notification log</p>
+                </div>
+            </div>
+            <div class="alerts-timeline" id="alerts-timeline">
+                <div class="empty-state">
+                    <span class="empty-icon">🔔</span>
+                    <p>No alerts yet</p>
+                    <code>Alerts appear when budget threshold is exceeded</code>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SETTINGS TAB ==================== -->
+        <section class="tab-content" id="tab-settings">
+            <div class="tab-header">
+                <div>
+                    <h2 class="tab-title">Settings</h2>
+                    <p class="tab-subtitle">Configure AWS credentials, email notifications, and budget thresholds</p>
+                </div>
+            </div>
+
+            <div class="settings-grid">
+                <!-- AWS Configuration -->
+                <div class="card settings-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+                            AWS Configuration
+                        </h3>
+                        <span class="settings-status" id="aws-status">Not configured</span>
+                    </div>
+                    <div class="settings-body">
+                        <div class="settings-field">
+                            <label>Access Key ID</label>
+                            <input type="text" id="set-aws-key" placeholder="AKIA..." autocomplete="off">
+                        </div>
+                        <div class="settings-field">
+                            <label>Secret Access Key</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="set-aws-secret" placeholder="Enter secret key" autocomplete="off">
+                                <button type="button" class="eye-toggle" onclick="togglePassword('set-aws-secret', this)" title="Show/Hide">
+                                    <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="settings-field">
+                            <label>Default Region</label>
+                            <select id="set-aws-region">
+                                <option value="us-east-1">us-east-1 (N. Virginia)</option>
+                                <option value="us-east-2">us-east-2 (Ohio)</option>
+                                <option value="us-west-1">us-west-1 (N. California)</option>
+                                <option value="us-west-2">us-west-2 (Oregon)</option>
+                                <option value="eu-west-1">eu-west-1 (Ireland)</option>
+                                <option value="eu-central-1">eu-central-1 (Frankfurt)</option>
+                                <option value="ap-south-1">ap-south-1 (Mumbai)</option>
+                                <option value="ap-southeast-1">ap-southeast-1 (Singapore)</option>
+                                <option value="ap-northeast-1">ap-northeast-1 (Tokyo)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email Notifications -->
+                <div class="card settings-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                            Email Notifications
+                        </h3>
+                        <span class="settings-status" id="email-status">Not configured</span>
+                    </div>
+                    <div class="settings-body">
+                        <div class="settings-row">
+                            <div class="settings-field">
+                                <label>SMTP Host</label>
+                                <input type="text" id="set-smtp-host" placeholder="smtp.gmail.com">
+                            </div>
+                            <div class="settings-field settings-field-small">
+                                <label>Port</label>
+                                <input type="number" id="set-smtp-port" placeholder="587">
+                            </div>
+                        </div>
+                        <div class="settings-field">
+                            <label>SMTP Username (Email)</label>
+                            <input type="email" id="set-smtp-user" placeholder="your@gmail.com">
+                        </div>
+                        <div class="settings-field">
+                            <label>App Password</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="set-smtp-password" placeholder="Gmail app password" autocomplete="off">
+                                <button type="button" class="eye-toggle" onclick="togglePassword('set-smtp-password', this)" title="Show/Hide">
+                                    <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <div class="settings-field">
+                                <label>Send From</label>
+                                <input type="email" id="set-alert-from" placeholder="sender@gmail.com">
+                            </div>
+                            <div class="settings-field">
+                                <label>Send To</label>
+                                <input type="email" id="set-alert-to" placeholder="recipient@gmail.com">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Budget Settings -->
+                <div class="card settings-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            Budget Threshold
+                        </h3>
+                    </div>
+                    <div class="settings-body">
+                        <div class="settings-field">
+                            <label>Monthly Waste Limit (USD)</label>
+                            <div class="budget-input-row">
+                                <span class="budget-currency">$</span>
+                                <input type="number" id="set-budget" step="5" min="0" placeholder="50.00">
+                            </div>
+                            <span class="settings-hint">You'll receive an email alert when waste exceeds this amount.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scan Settings -->
+                <div class="card settings-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                            Scan Settings
+                        </h3>
+                    </div>
+                    <div class="settings-body">
+                        <div class="settings-field">
+                            <label>Data Mode</label>
+                            <div class="toggle-row">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="set-demo-mode" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span class="toggle-label" id="demo-mode-label">Demo Mode (no AWS needed)</span>
+                            </div>
+                            <span class="settings-hint">Turn off to scan your real AWS account. Requires valid credentials above.</span>
+                        </div>
+                        <div class="settings-row">
+                            <div class="settings-field">
+                                <label>Snapshot Age (days)</label>
+                                <input type="number" id="set-snap-age" min="1" placeholder="30">
+                            </div>
+                            <div class="settings-field">
+                                <label>EC2 CPU Threshold (%)</label>
+                                <input type="number" id="set-cpu-thresh" step="0.5" min="0" placeholder="5.0">
+                            </div>
+                        </div>
+                        <div class="settings-field">
+                            <label>Ollama AI Model</label>
+                            <input type="text" id="set-ollama" placeholder="phi3">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-actions">
+                <button class="btn btn-primary" id="save-settings-btn" onclick="saveSettings()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Save All Settings
+                </button>
+                <span class="settings-save-status" id="settings-save-status"></span>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

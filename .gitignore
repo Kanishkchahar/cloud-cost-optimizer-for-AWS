@@ -1,0 +1,20 @@
+# Environment & secrets
+.env
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Logs
+*.log
+
+# Output
+output/last_report.json
+
+# IDE
+.vscode/
+.idea/
