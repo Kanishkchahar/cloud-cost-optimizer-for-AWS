@@ -8,8 +8,10 @@ logger = logging.getLogger(__name__)
 
 def get_connection():
     """Get a database connection with row factory for dict-like access."""
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=20)
     conn.row_factory = sqlite3.Row
+    # Enable WAL mode for concurrent read/write
+    conn.execute("PRAGMA journal_mode=WAL")
     return conn
 
 
@@ -27,6 +29,12 @@ def setup_db():
                     resources_found INTEGER DEFAULT 0
                 )
             """)
+
+            try:
+                cursor.execute("ALTER TABLE scans ADD COLUMN ai_advice TEXT")
+            except sqlite3.OperationalError:
+                pass
+
 
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS resources (
@@ -91,7 +99,19 @@ def get_alerts(limit=50):
         return []
 
 
-def save_scan(total_waste, resources_found):
+def clear_all_alerts():
+    """Clear all alerts from the database."""
+    try:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM alerts")
+            conn.commit()
+    except sqlite3.Error as e:
+        logger.error(f"Failed to clear alerts: {e}")
+        raise
+
+
+def save_scan(total_waste=0, resources_found=0):
     """Save a scan record and return the scan ID."""
     try:
         with get_connection() as conn:
@@ -102,10 +122,25 @@ def save_scan(total_waste, resources_found):
             )
             scan_id = cursor.lastrowid
             conn.commit()
-            logger.info(f"Scan #{scan_id} saved — ${total_waste} waste, {resources_found} resources.")
+            logger.info(f"Scan #{scan_id} initiated.")
             return scan_id
     except sqlite3.Error as e:
         logger.error(f"Failed to save scan: {e}")
+        raise
+
+
+def update_scan_totals(scan_id, total_waste, resources_found):
+    """Update the totals for an existing scan."""
+    try:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "UPDATE scans SET total_waste_usd = ?, resources_found = ? WHERE id = ?",
+                (total_waste, resources_found, scan_id)
+            )
+            conn.commit()
+    except sqlite3.Error as e:
+        logger.error(f"Failed to update scan totals for #{scan_id}: {e}")
         raise
 
 
@@ -138,6 +173,19 @@ def get_all_scans():
         return []
 
 
+def clear_all_scans():
+    """Clear all scans and associated resources from the database."""
+    try:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM resources")
+            cursor.execute("DELETE FROM scans")
+            conn.commit()
+    except sqlite3.Error as e:
+        logger.error(f"Failed to clear scans: {e}")
+        raise
+
+
 def get_scan_resources(scan_id):
     """Return all resources for a given scan."""
     try:
@@ -147,6 +195,30 @@ def get_scan_resources(scan_id):
             return [dict(row) for row in cursor.fetchall()]
     except sqlite3.Error as e:
         logger.error(f"Failed to fetch resources for scan {scan_id}: {e}")
+        return []
+
+
+def get_all_active_resources():
+    """Return all unique resources that are still in 'detected' status across all scans."""
+    try:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            # Get latest status for each unique resource_id
+            # We use a subquery to find the maximum ID (latest entry) for each resource_id
+            cursor.execute("""
+                SELECT r.* 
+                FROM resources r
+                INNER JOIN (
+                    SELECT resource_id, MAX(id) as max_id 
+                    FROM resources 
+                    GROUP BY resource_id
+                ) latest ON r.id = latest.max_id
+                WHERE r.status NOT IN ('deleted', 'terminated')
+                ORDER BY r.waste_usd DESC
+            """)
+            return [dict(row) for row in cursor.fetchall()]
+    except sqlite3.Error as e:
+        logger.error(f"Failed to fetch all active resources: {e}")
         return []
 
 
@@ -197,3 +269,19 @@ def update_resource_status(resource_id, status):
     except sqlite3.Error as e:
         logger.error(f"Failed to update resource {resource_id}: {e}")
         raise
+
+
+def update_scan_ai_advice(scan_id, advice):
+    """Update the AI advice for a given scan."""
+    try:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "UPDATE scans SET ai_advice = ? WHERE id = ?",
+                (advice, scan_id)
+            )
+            conn.commit()
+    except sqlite3.Error as e:
+        logger.error(f"Failed to update scan {scan_id} AI advice: {e}")
+        raise
+

@@ -5,7 +5,6 @@ from rich.table import Table
 from rich.panel import Panel
 from rich.text import Text
 from analyzer.cost_estimator import get_severity
-from config import REPORT_PATH
 
 logger = logging.getLogger(__name__)
 console = Console()
@@ -33,10 +32,12 @@ def print_report(findings, total):
 
     for i, f in enumerate(findings, 1):
         severity = get_severity(f["waste_usd"])
+        r_type = f.get("type") or f.get("resource_type", "Unknown")
+        r_id = f.get("id") or f.get("resource_id", "Unknown")
         table.add_row(
             str(i),
-            f["type"],
-            f["id"],
+            r_type,
+            r_id,
             f["detail"],
             f"${f['waste_usd']:.2f}",
             severity_styles.get(severity, "")
@@ -60,24 +61,9 @@ def build_report_text(findings, total):
     lines.append(f"Resources found: {len(findings)}\n")
     for f in findings:
         severity = get_severity(f["waste_usd"]).upper()
-        lines.append(f"- [{f['type']}] {f['id']}: {f['detail']} — ${f['waste_usd']:.2f}/month [{severity}]")
+        r_type = f.get("type") or f.get("resource_type", "Unknown")
+        r_id = f.get("id") or f.get("resource_id", "Unknown")
+        region = f.get("region") or "unknown-region"
+        lines.append(f"- [{r_type}] {r_id} (Region: {region}): {f['detail']} — ${f['waste_usd']:.2f}/month [{severity}]")
     return "\n".join(lines)
 
-
-def save_report_json(findings, total):
-    """Save the report as JSON to the output directory."""
-    import os
-    os.makedirs(os.path.dirname(REPORT_PATH), exist_ok=True)
-
-    report = {
-        "total_waste_usd": total,
-        "annual_projection_usd": round(total * 12, 2),
-        "resources_found": len(findings),
-        "findings": findings
-    }
-    try:
-        with open(REPORT_PATH, "w") as f:
-            json.dump(report, f, indent=2, default=str)
-        logger.info(f"Report saved to {REPORT_PATH}")
-    except Exception as e:
-        logger.error(f"Failed to save report: {e}")

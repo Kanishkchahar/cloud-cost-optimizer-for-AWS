@@ -5,11 +5,14 @@ from config import AWS_REGION, EBS_COST_PER_GB
 logger = logging.getLogger(__name__)
 
 
-def scan_unattached_ebs():
+def scan_unattached_ebs(region=None):
     """Find EBS volumes that are not attached to any instance. Uses pagination."""
+    if not region:
+        region = AWS_REGION
+        
     findings = []
     try:
-        ec2 = boto3.client("ec2", region_name=AWS_REGION)
+        ec2 = boto3.client("ec2", region_name=region)
         paginator = ec2.get_paginator("describe_volumes")
         page_iterator = paginator.paginate(
             Filters=[{"Name": "status", "Values": ["available"]}]
@@ -26,8 +29,9 @@ def scan_unattached_ebs():
                     "id": vol["VolumeId"],
                     "detail": f"{size_gb}GB unattached {vol_type} volume",
                     "waste_usd": round(monthly_cost, 2),
-                    "region": AWS_REGION
+                    "region": region
                 })
+
 
         logger.info(f"EBS scan complete — {len(findings)} unattached volumes found.")
     except Exception as e:

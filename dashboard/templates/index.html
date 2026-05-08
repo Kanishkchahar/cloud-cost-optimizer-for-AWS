@@ -26,21 +26,26 @@
     <!-- Sidebar Navigation -->
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-logo">
-            <div class="sidebar-logo-icon">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="url(#logoGrad)" stroke-width="2">
+            <div class="sidebar-logo-icon" style="background: rgba(255, 153, 0, 0.1); border-color: rgba(255, 153, 0, 0.2);">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
                     <defs>
-                        <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color:#6366f1"/>
-                            <stop offset="100%" style="stop-color:#06b6d4"/>
+                        <linearGradient id="awsGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#FF9900"/>
+                            <stop offset="100%" style="stop-color:#FF7300"/>
                         </linearGradient>
                     </defs>
-                    <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+                    <!-- Abstract Cloud -->
+                    <path d="M6.5 14.5a3.5 3.5 0 0 1 0-7h.5a5.5 5.5 0 0 1 11 0h.5a3.5 3.5 0 0 1 0 7h-12z" fill="#f8fafc"/>
+                    <!-- Dollar symbol inside cloud -->
+                    <path d="M12 9v5m-1.5-3.5h3m-3 2h3" stroke="#0f172a" stroke-width="1.5" stroke-linecap="round"/>
+                    <!-- AWS inspired smile arrow -->
+                    <path d="M4 18.5 Q 12 23 20 18.5" stroke="url(#awsGrad)" stroke-width="2" stroke-linecap="round" fill="none"/>
+                    <!-- Arrow head -->
+                    <path d="M17.5 17.5 L 20 18.5 L 19 21" stroke="url(#awsGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
                 </svg>
             </div>
-            <span class="sidebar-logo-text">CostOptimizer</span>
-        </div>
-
-        <div class="sidebar-nav">
+            <span class="sidebar-logo-text" style="background: linear-gradient(135deg, #ffffff, #cbd5e1); -webkit-background-clip: text; color: transparent;">Cost<span style="color: #FF9900;">Optimizer</span></span>
+        </div>        <div class="sidebar-nav">
             <button class="nav-item active" data-tab="home" id="nav-home" onclick="switchTab('home')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                 <span>Home</span>
@@ -49,32 +54,64 @@
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                 <span>Dashboard</span>
             </button>
+            <button class="nav-item" data-tab="inventory" id="nav-inventory" onclick="switchTab('inventory')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><path d="M10 5v14M15 5v14M3 12h18"/></svg>
+                <span>Cloud Inventory</span>
+            </button>
             <button class="nav-item" data-tab="resources" id="nav-resources" onclick="switchTab('resources')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-                <span>Resources</span>
+                <span>Wasted Resources</span>
+            </button>
+            <button class="nav-item" data-tab="active" id="nav-active" onclick="switchTab('active')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                <span>Active Services</span>
+            </button>
+            <button class="nav-item" data-tab="aichat" id="nav-aichat" onclick="switchTab('aichat')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span>AI Advisor Chat</span>
             </button>
             <button class="nav-item" data-tab="analytics" id="nav-analytics" onclick="switchTab('analytics')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                 <span>Analytics</span>
             </button>
-            <button class="nav-item" data-tab="history" id="nav-history" onclick="switchTab('history')">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <span>History</span>
-            </button>
             <button class="nav-item" data-tab="alerts" id="nav-alerts" onclick="switchTab('alerts')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                 <span>Alerts</span>
             </button>
+            <button class="nav-item" data-tab="history" id="nav-history" onclick="switchTab('history')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>History</span>
+            </button>
             <button class="nav-item" data-tab="settings" id="nav-settings" onclick="switchTab('settings')">
+
+
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                 <span>Settings</span>
             </button>
         </div>
 
         <div class="sidebar-footer">
+            <button class="btn btn-primary" id="sidebar-scan-btn" onclick="runScan()" style="width: 100%; margin-bottom: 16px; justify-content: center; font-weight: 600;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Run Scan
+            </button>
             <div class="sidebar-status">
                 <span class="pulse-dot"></span>
                 <span id="sidebar-status-text">System Online</span>
+            </div>
+            
+            <div class="live-monitor-container" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="live-icon">📡</span>
+                        <span style="font-size: 13px; font-weight: 500; color: #94a3b8;">Live Monitoring</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="live-monitor-toggle" onchange="toggleLiveMonitoring(this.checked)">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <p id="live-countdown" style="font-size: 11px; color: #64748b; margin-top: 8px; display: none;">Next scan in: <span id="timer-val">5:00</span></p>
             </div>
         </div>
     </nav>
@@ -91,9 +128,10 @@
                         AWS Cloud Intelligence Platform
                     </div>
                     <h1 class="hero-title">
-                        Stop Wasting Money on
-                        <span class="hero-gradient-text">Idle Cloud Resources</span>
+                        Stop Wasting Money on<br>
+                        <span class="hero-gradient-text" id="typing-text">Idle Cloud Resources</span><span class="typing-cursor">|</span>
                     </h1>
+
                     <p class="hero-description">
                         Scan your AWS infrastructure, detect unused resources, and get AI-powered
                         recommendations to cut costs — all in real time.
@@ -105,26 +143,41 @@
                         </button>
                         <button class="btn btn-hero-secondary" onclick="switchTab('resources')">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                            View Resources
+                            View Wasted Resources
                         </button>
                     </div>
+                    <div class="hero-insight-ribbon">
+                        <div class="insight-pulse"></div>
+                        <span class="insight-icon">💡</span>
+                        <p id="hero-insight-text">Detecting top cost-saving AWS insights across availability zones...</p>
+                    </div>
                 </div>
+
 
                 <!-- Animated hero visual -->
                 <div class="hero-visual">
                     <div class="hero-orbit">
                         <div class="orbit-ring orbit-ring-1">
-                            <div class="orbit-dot orbit-dot-1">💾</div>
+                            <div class="orbit-dot orbit-dot-1">
+                                <svg width="36" height="36" viewBox="0 0 24 24" fill="rgba(99,102,241,0.1)" stroke="#818cf8" stroke-width="2" style="background:rgba(99,102,241,0.1); padding:6px; border-radius:10px; border:1px solid rgba(99,102,241,0.3); box-shadow: 0 0 15px rgba(99,102,241,0.2);"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                            </div>
                         </div>
                         <div class="orbit-ring orbit-ring-2">
-                            <div class="orbit-dot orbit-dot-2">🖥️</div>
+                            <div class="orbit-dot orbit-dot-2">
+                                <svg width="36" height="36" viewBox="0 0 24 24" fill="rgba(6,182,212,0.1)" stroke="#22d3ee" stroke-width="2" style="background:rgba(6,182,212,0.1); padding:6px; border-radius:10px; border:1px solid rgba(6,182,212,0.3); box-shadow: 0 0 15px rgba(6,182,212,0.2);"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                            </div>
                         </div>
                         <div class="orbit-ring orbit-ring-3">
-                            <div class="orbit-dot orbit-dot-3">🌐</div>
+                            <div class="orbit-dot orbit-dot-3">
+                                <svg width="36" height="36" viewBox="0 0 24 24" fill="rgba(245,158,11,0.1)" stroke="#fbbf24" stroke-width="2" style="background:rgba(245,158,11,0.1); padding:6px; border-radius:10px; border:1px solid rgba(245,158,11,0.3); box-shadow: 0 0 15px rgba(245,158,11,0.2);"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                            </div>
                         </div>
-                        <div class="hero-center-icon">☁️</div>
+                        <div class="hero-center-icon">
+                            <svg width="76" height="76" viewBox="0 0 24 24" fill="rgba(255,153,0,0.08)" stroke="url(#awsGrad)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 20px rgba(255,153,0,0.35));"><path d="M17.5 19A3.5 3.5 0 0 0 21 15.5c0-1.89-1.5-3.5-3.5-3.5h-.5A5.5 5.5 0 0 0 6.5 12h-.5A3.5 3.5 0 0 0 2.5 15.5A3.5 3.5 0 0 0 6 19z"></path></svg>
+                        </div>
                     </div>
                 </div>
+
             </div>
 
             <!-- Feature cards -->
@@ -141,7 +194,7 @@
                     <div class="feature-icon feature-icon-2">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
                     </div>
-                    <h3 class="feature-title">Resource Scanner</h3>
+                    <h3 class="feature-title">Waste Scanner</h3>
                     <p class="feature-desc">Detect unattached EBS, stopped EC2, unused EIPs, and old snapshots.</p>
                     <span class="feature-arrow">&rarr;</span>
                 </div>
@@ -195,13 +248,9 @@
                     <p class="tab-subtitle">Overview of your AWS cost optimization status</p>
                 </div>
                 <div style="display: flex; gap: 12px;">
-                    <button class="btn btn-secondary" id="refresh-btn" onclick="loadDashboard()">
+                    <button class="btn btn-secondary" id="refresh-btn" onclick="refreshAllData()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-                        Refresh
-                    </button>
-                    <button class="btn btn-primary" id="run-scan-btn" onclick="runScan()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                        Run Scan Now
+                        Refresh All
                     </button>
                 </div>
             </div>
@@ -327,13 +376,19 @@
         <section class="tab-content" id="tab-resources">
             <div class="tab-header">
                 <div>
-                    <h2 class="tab-title">Resources</h2>
-                    <p class="tab-subtitle">All detected wasted resources from your latest scan</p>
+                    <h2 class="tab-title">Wasted Resources</h2>
+                    <p class="tab-subtitle">Idle, unattached, or stopped AWS infrastructure that is costing you money. Use the Actions column to safely delete or start them.</p>
                 </div>
-                <button class="btn btn-outline" id="export-btn" onclick="exportCSV()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Export CSV
-                </button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="refreshAllData()" style="font-size:12px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                        Refresh
+                    </button>
+                    <button class="btn btn-outline" id="export-btn" onclick="exportCSV()" style="font-size:12px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Export CSV
+                    </button>
+                </div>
             </div>
 
             <!-- Resource summary mini cards -->
@@ -384,11 +439,13 @@
                                 <th class="sortable" data-sort="detail" id="sort-detail">Detail</th>
                                 <th class="sortable" data-sort="waste" id="sort-waste">Cost/Month</th>
                                 <th class="sortable" data-sort="severity" id="sort-severity">Severity</th>
+                                <th class="sortable" data-sort="detected_at" id="sort-detected">Last Seen</th>
                                 <th>Status</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="resources-tbody">
-                            <tr class="empty-row"><td colspan="6">
+                            <tr class="empty-row"><td colspan="8">
                                 <div class="empty-state">
                                     <span class="empty-icon">📭</span>
                                     <p>No scan data yet</p>
@@ -399,9 +456,164 @@
                     </table>
                 </div>
             </div>
+
+            <!-- AI Advisor Section -->
+            <div class="card" style="margin-top: 24px;">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 class="card-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        <span id="ai-provider-title-main">Groq Cloud AI</span>
+                    </h3>
+                    <button class="btn btn-secondary" onclick="loadAIAdvice(true)">
+
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                        Ask AI
+                    </button>
+                </div>
+                <div class="card-body" id="ai-advice-container" style="padding: 20px; font-family: monospace; white-space: pre-wrap; background: rgba(0,0,0,0.2); border-radius: 8px; margin-top: 10px; min-height: 100px;">
+                    <span id="ai-provider-desc-main" style="color: #64748b;">Click "Ask AI" to generate cost-saving recommendations powered by Groq Cloud AI...</span>
+
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== ACTIVE SERVICES TAB ==================== -->
+        <section class="tab-content" id="tab-active">
+            <div class="tab-header">
+                <div>
+                    <h2 class="tab-title">Active Services</h2>
+                    <p class="tab-subtitle">Healthy, currently running infrastructure. Manage your live servers and databases directly from here without logging into AWS.</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="loadActiveServices()" style="font-size:12px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+
+            <div class="card table-card">
+                <div class="card-header">
+                    <h3 class="card-title">Live Resources</h3>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Resource ID</th>
+                                <th>Detail</th>
+                                <th>Region</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="active-tbody">
+                            <tr class="empty-row"><td colspan="6">
+                                <div class="empty-state">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(168,85,247,0.4)" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                    <p style="color:#cbd5e1;font-weight:600;">No active services found</p>
+                                    <span style="font-size:12px;color:#64748b;">No running servers or databases detected</span>
+                                </div>
+                            </td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Stopped Infrastructure Section -->
+            <div class="card table-card" style="margin-top: 32px;">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/></svg>
+                        Stopped Infrastructure
+                    </h3>
+                    <span class="card-badge" id="stopped-count">0</span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Resource ID</th>
+                                <th>Detail</th>
+                                <th>Region</th>
+                                <th>Status</th>
+                                <th style="width:140px; text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stopped-tbody">
+                            <tr class="empty-row"><td colspan="6">
+                                <div class="empty-state">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(168,85,247,0.4)" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                    <p style="color:#cbd5e1;font-weight:600;">No stopped services found</p>
+                                    <span style="font-size:12px;color:#64748b;">Everything is currently running or terminated</span>
+                                </div>
+                            </td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== CLOUD INVENTORY TAB ==================== -->
+        <section class="tab-content" id="tab-inventory">
+            <div class="tab-header">
+                <div>
+                    <h2 class="tab-title">Cloud Inventory</h2>
+                    <p class="tab-subtitle">Complete environment inventory tracking across all healthy, active, and decommissioned services.</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="loadInventory(true)" style="font-size:12px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+
+            <div class="card table-card">
+                <div class="card-header">
+                    <div class="filter-group">
+                        <button class="filter-btn active" data-filter="all" id="inv-filter-all" onclick="filterInventory('all')">All</button>
+                        <button class="filter-btn" data-filter="running" id="inv-filter-running" onclick="filterInventory('running')">Active</button>
+                        <button class="filter-btn" data-filter="stopped" id="inv-filter-stopped" onclick="filterInventory('stopped')">Stopped</button>
+                        <button class="filter-btn" data-filter="waste" id="inv-filter-waste" onclick="filterInventory('waste')">Waste</button>
+                    </div>
+                    <div class="search-box">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="inv-search-input" placeholder="Filter by region or ID..." oninput="searchInventory(this.value)">
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Resource ID</th>
+                                <th>Detail</th>
+                                <th>Region</th>
+                                <th>Status</th>
+                                <th>Cost/mo</th>
+                                <th>Category</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-tbody">
+                            <tr class="empty-row"><td colspan="7">
+                                <div class="empty-state">
+                                    <span class="empty-icon">⏳</span>
+                                    <p>Loading telemetry...</p>
+                                </div>
+                            </td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </section>
 
         <!-- ==================== ANALYTICS TAB ==================== -->
+
         <section class="tab-content" id="tab-analytics">
             <div class="tab-header">
                 <div>
@@ -490,13 +702,23 @@
                     <h2 class="tab-title">Scan History</h2>
                     <p class="tab-subtitle">Review past scans and compare optimization progress</p>
                 </div>
+                <div>
+                    <button class="btn btn-secondary" onclick="clearHistory()" style="font-size:12px; color: #ef4444; border-color: rgba(239,68,68,0.3);">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        Clear History
+                    </button>
+                </div>
             </div>
 
             <div class="history-timeline" id="history-timeline">
-                <div class="empty-state">
-                    <span class="empty-icon">📋</span>
-                    <p>No scan history yet</p>
-                    <code>python main.py --scan</code>
+                <div class="empty-state" style="padding:60px 24px;">
+                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="rgba(168,85,247,0.35)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <p style="color:#cbd5e1;font-weight:600;font-size:15px;margin-top:4px;">No scan history yet</p>
+                    <span style="font-size:12px;color:#64748b;">Run your first scan to start tracking cost trends over time</span>
+                    <button class="btn btn-primary" style="margin-top:12px;" onclick="runScan()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        Run First Scan
+                    </button>
                 </div>
             </div>
         </section>
@@ -508,17 +730,52 @@
                     <h2 class="tab-title">Alerts</h2>
                     <p class="tab-subtitle">Budget violation history and notification log</p>
                 </div>
+                <div>
+                    <button class="btn btn-secondary" onclick="clearAlerts()" style="font-size:12px; color: #ef4444; border-color: rgba(239,68,68,0.3);">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        Clear Alerts
+                    </button>
+                </div>
             </div>
             <div class="alerts-timeline" id="alerts-timeline">
-                <div class="empty-state">
-                    <span class="empty-icon">🔔</span>
-                    <p>No alerts yet</p>
-                    <code>Alerts appear when budget threshold is exceeded</code>
+                <div class="empty-state" style="padding:60px 24px;">
+                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="rgba(34,197,94,0.4)" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    <p style="color:#22c55e;font-weight:700;font-size:15px;margin-top:4px;">All Clear — No Alerts</p>
+                    <span style="font-size:12px;color:#64748b;">Alerts appear here when your monthly waste exceeds the budget threshold you configured</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== AI CHAT TAB ==================== -->
+        <section class="tab-content" id="tab-aichat">
+            <div class="tab-header">
+                <div>
+                    <h2 class="tab-title">AI Advisor Chat</h2>
+                    <p class="tab-subtitle" id="ai-provider-subtitle-chat">Chat directly with Groq Cloud AI (LLaMA 3.3) about your infrastructure waste</p>
+
+
+                </div>
+            </div>
+
+            <div class="card chat-card" style="display: flex; flex-direction: column; height: 600px;">
+                <div class="card-body chat-messages" id="chat-messages" style="flex-grow: 1; padding: 20px; overflow-y: auto; background: rgba(0,0,0,0.25); border-radius: 8px 8px 0 0; display: flex; flex-direction: column; gap: 16px;">
+                    <div class="chat-message ai">
+                        <div class="chat-bubble ai" style="background: #1e293b; border: 1px solid #334155; padding: 12px 16px; border-radius: 12px; max-width: 80%; align-self: flex-start; color: #e2e8f0;">
+                            Hello! I am your AWS Cost Optimization AI. I have context on your latest scans. How can I help you save money today?
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input-container" style="display: flex; padding: 16px; background: rgba(0,0,0,0.1); border-top: 1px solid #334155; gap: 12px;">
+                    <input type="text" id="chat-input" placeholder="Ask something (e.g., 'Which region has the most waste?')" style="flex-grow: 1; padding: 12px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white;" onkeypress="if(event.key === 'Enter') sendChatMessage()">
+                    <button class="btn btn-primary" id="chat-send-btn" onclick="sendChatMessage()">
+                        Send
+                    </button>
                 </div>
             </div>
         </section>
 
         <!-- ==================== SETTINGS TAB ==================== -->
+
         <section class="tab-content" id="tab-settings">
             <div class="tab-header">
                 <div>
@@ -555,17 +812,23 @@
                         <div class="settings-field">
                             <label>Default Region</label>
                             <select id="set-aws-region">
+                                <option value="ap-south-1" selected>ap-south-1 (Mumbai)</option>
                                 <option value="us-east-1">us-east-1 (N. Virginia)</option>
                                 <option value="us-east-2">us-east-2 (Ohio)</option>
                                 <option value="us-west-1">us-west-1 (N. California)</option>
                                 <option value="us-west-2">us-west-2 (Oregon)</option>
                                 <option value="eu-west-1">eu-west-1 (Ireland)</option>
                                 <option value="eu-central-1">eu-central-1 (Frankfurt)</option>
-                                <option value="ap-south-1">ap-south-1 (Mumbai)</option>
                                 <option value="ap-southeast-1">ap-southeast-1 (Singapore)</option>
                                 <option value="ap-northeast-1">ap-northeast-1 (Tokyo)</option>
                             </select>
                         </div>
+                        <div class="settings-field">
+                            <label>Target Scan Regions (Comma-separated)</label>
+                            <input type="text" id="set-aws-regions" placeholder="ap-south-1">
+                            <span class="settings-hint">Separate region IDs via commas. E.g., <code>ap-south-1,us-east-1</code>.</span>
+                        </div>
+
                     </div>
                 </div>
 
@@ -645,17 +908,7 @@
                         </h3>
                     </div>
                     <div class="settings-body">
-                        <div class="settings-field">
-                            <label>Data Mode</label>
-                            <div class="toggle-row">
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="set-demo-mode" checked>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                                <span class="toggle-label" id="demo-mode-label">Demo Mode (no AWS needed)</span>
-                            </div>
-                            <span class="settings-hint">Turn off to scan your real AWS account. Requires valid credentials above.</span>
-                        </div>
+
                         <div class="settings-row">
                             <div class="settings-field">
                                 <label>Snapshot Age (days)</label>
@@ -666,9 +919,25 @@
                                 <input type="number" id="set-cpu-thresh" step="0.5" min="0" placeholder="5.0">
                             </div>
                         </div>
+
+                    </div>
+            </div>
+
+                <!-- Auto-Scan Settings -->
+                <div class="card settings-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            Scheduled Auto-Scan
+                        </h3>
+                    </div>
+                    <div class="settings-body">
                         <div class="settings-field">
-                            <label>Ollama AI Model</label>
-                            <input type="text" id="set-ollama" placeholder="phi3">
+                            <label>Automatically scan AWS daily</label>
+                            <span class="settings-hint">Creates a Windows Scheduled Task to run silently in the background at 2:00 AM every day.</span>
+                            <button id="btn-schedule" class="btn btn-secondary" onclick="scheduleScan()" style="margin-top:12px; width:fit-content;">
+                                Enable Auto-Scan
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -685,6 +954,29 @@
 
     </main>
 
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}?v={{ range(100000) | random }}"></script>
+    <script>
+        // Fallback: ensure Cloud Inventory tab always triggers data load
+        document.addEventListener('DOMContentLoaded', function() {
+            var origSwitch = window.switchTab;
+            var invBtn = document.getElementById('nav-inventory');
+            if (invBtn) {
+                invBtn.addEventListener('click', function() {
+                    setTimeout(function() {
+                        if (typeof window.loadInventory === 'function') {
+                            var tbody = document.getElementById('inventory-tbody');
+                            if (tbody && tbody.textContent.indexOf('Loading telemetry') !== -1) {
+                                console.log('[Fallback] Triggering loadInventory...');
+                                window.loadInventory();
+                            }
+                        }
+                    }, 300);
+                });
+            }
+        });
+    </script>
 </body>
 </html>

@@ -8,7 +8,7 @@ def get_breakdown_by_type(findings):
     """Break down waste by resource type for charting."""
     breakdown = {}
     for f in findings:
-        rtype = f["type"]
+        rtype = f.get("type") or f.get("resource_type", "Unknown")
         breakdown[rtype] = breakdown.get(rtype, 0) + f["waste_usd"]
     return {k: round(v, 2) for k, v in breakdown.items()}
 

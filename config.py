@@ -1,26 +1,45 @@
 # config.py — Central configuration loaded from .env file
 import os
+import boto3
+import botocore.config
 from dotenv import load_dotenv
 
 # Load .env file
 load_dotenv()
 
+# Optimize boto3 timeouts globally to prevent long region scan hangs
+_original_boto3_client = boto3.client
+
+def _patched_boto3_client(service_name, **kwargs):
+    if 'config' not in kwargs:
+        kwargs['config'] = botocore.config.Config(
+            connect_timeout=10,
+            read_timeout=15,
+            retries={'max_attempts': 3}
+        )
+    return _original_boto3_client(service_name, **kwargs)
+
+boto3.client = _patched_boto3_client
+
+
 # --- AWS ---
-AWS_REGION = os.getenv("AWS_DEFAULT_REGION", "us-east-1")
+AWS_REGION = os.getenv("AWS_DEFAULT_REGION", "ap-south-1")
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "")
+AWS_REGIONS = [r.strip() for r in os.getenv("AWS_REGIONS", "").split(",") if r.strip()]
+
+# --- AI Models ---
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
+
 
 # --- Thresholds ---
 SNAPSHOT_AGE_DAYS = int(os.getenv("SNAPSHOT_AGE_DAYS", "30"))
 EC2_CPU_THRESHOLD = float(os.getenv("EC2_CPU_THRESHOLD", "5.0"))
 
-# --- AI ---
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "phi3")
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
-
 # --- Database ---
 DB_PATH = os.getenv("DB_PATH", "db/optimizer.db")
-REPORT_PATH = "output/last_report.json"
 
 # --- Budget Alert ---
 BUDGET_THRESHOLD = float(os.getenv("BUDGET_THRESHOLD", "50.00"))

@@ -6,13 +6,17 @@ A comprehensive Python-based tool (CLI + Web Dashboard) that scans your AWS acco
 
 ## 🌟 Features
 
-- **🔍 Automated Scanning:** Finds idle/wasted resources including unattached EBS volumes, stopped EC2 instances, unused Elastic IPs, and old snapshots.
+- **🔍 Automated Scanning:** Finds idle/wasted resources including unattached EBS volumes, stopped EC2 instances, unused Elastic IPs, old snapshots, empty S3 buckets, incomplete S3 multipart uploads, and abandoned Lambda functions.
+- **⚡ Multithreaded Engine:** Powered by a high-performance, concurrent scanning engine that scans across all active AWS regions in parallel to reduce scan times by 80%.
+
+- **🚀 Live Infrastructure Management:** View both active and stopped services across your AWS environment, and perform live actions (Start, Stop, Reboot, Terminate) directly from the dashboard.
+- **📈 AWS Cost Explorer Integration:** Pulls live billing data from AWS Cost Explorer to show your exact monthly spend by service.
 - **💰 Cost Estimation:** Calculates exact monthly cost waste per resource based on AWS pricing.
-- **📊 Interactive Web Dashboard:** A beautiful, responsive UI with real-time charts, filterable tables, cost trends, and CSV export capabilities.
+- **📊 Interactive Web Dashboard:** A beautiful, responsive AWS-style UI with skeleton loaders, real-time charts, filterable tables, and cost trends.
+- **⏰ Scheduled Auto-Scans:** Configure Windows Task Scheduler directly from the UI to run hourly, daily, or weekly background scans automatically.
 - **🤖 AI-Powered Advice:** Integrates with local AI models via Ollama (e.g., Phi-3, Llama 3) to analyze reports and provide actionable cost-saving advice in plain English.
 - **🚨 Budget Alerts:** Configurable threshold alerts with automated email notifications when your waste exceeds a defined budget.
-- **⚙️ Settings Management:** Easily toggle between real AWS data and demo data, and update configurations directly from the UI.
-- **🧪 Dry-Run Mode:** Safely preview which resources would be deleted before taking any destructive action.
+- **⚙️ Settings Management:** Update AWS credentials, budget thresholds, and email configurations directly from the UI.
 - **🗄️ Local Database:** Stores scan history and tracks your optimization trends over time using SQLite.
 
 ---
@@ -58,10 +62,10 @@ A comprehensive Python-based tool (CLI + Web Dashboard) that scans your AWS acco
    # AWS Credentials
    AWS_ACCESS_KEY_ID=your_access_key
    AWS_SECRET_ACCESS_KEY=your_secret_key
-   AWS_DEFAULT_REGION=us-east-1
+   AWS_DEFAULT_REGION=ap-south-1
+   AWS_REGIONS=ap-south-1  # (Optional) Comma-separated list of target regions to scan
 
-   # Important: Set to False to scan real AWS data
-   USE_DEMO_DATA=True
+
    ```
 
 4. **(Optional) Setup Local AI:**
@@ -107,20 +111,21 @@ python main.py --scan --execute
 ## 📁 Project Structure
 
 ```
-aws-cost-optimizer/
 ├── main.py                  # CLI & Web App Entry Point
 ├── config.py                # Core configuration & thresholds
-├── .env                     # Secrets and Environment Config
+├── .env                     # Secrets and Environment Config (Ignored)
+├── .env.example             # Template for Environment Config
 ├── requirements.txt         # Python dependencies
 ├── dashboard/               # Flask Web Application
 │   ├── app.py               # API Routes and Views
-│   ├── static/              # CSS/JS Assets
+│   ├── static/              # CSS/JS Assets (Glassmorphism UI)
 │   └── templates/           # HTML Views
-├── scanner/                 # AWS Boto3 Scanners (EBS, EC2, EIP, Snapshots)
+├── scanner/                 # AWS Boto3 Scanners (EBS, EC2, EIP, Snapshots, S3, Lambda)
 ├── analyzer/                # Cost Estimators & AI Advisor Integrations
-├── actor/                   # Cleanup scripts (Dry-run & Execute)
+├── actor/                   # Cleanup scripts & Instance Management
 ├── notifier/                # Email alerting system
 ├── db/                      # SQLite Database schemas and models
+├── docs/                    # Project Documentation
 └── tests/                   # Unit tests
 ```
 
@@ -136,13 +141,25 @@ To run the application against your real AWS account, the IAM user must have the
     {
       "Effect": "Allow",
       "Action": [
-        "ec2:DescribeVolumes",
-        "ec2:DescribeAddresses",
-        "ec2:DescribeInstances",
-        "ec2:DescribeSnapshots",
+        "ec2:Describe*",
+        "ec2:StartInstances",
+        "ec2:StopInstances",
+        "ec2:RebootInstances",
+        "ec2:TerminateInstances",
         "ec2:DeleteVolume",
         "ec2:ReleaseAddress",
-        "ec2:DeleteSnapshot"
+        "ec2:DeleteSnapshot",
+        "rds:Describe*",
+        "rds:StartDBInstance",
+        "rds:StopDBInstance",
+        "rds:RebootDBInstance",
+        "rds:DeleteDBInstance",
+        "s3:ListAllMyBuckets",
+        "s3:ListBucket",
+        "s3:ListBucketMultipartUploads",
+        "lambda:ListFunctions",
+        "cloudwatch:GetMetricStatistics",
+        "ce:GetCostAndUsage"
       ],
       "Resource": "*"
     }

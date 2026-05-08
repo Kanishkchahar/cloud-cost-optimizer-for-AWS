@@ -6,11 +6,14 @@ from config import AWS_REGION, SNAPSHOT_AGE_DAYS, SNAPSHOT_COST_PER_GB
 logger = logging.getLogger(__name__)
 
 
-def scan_old_snapshots():
+def scan_old_snapshots(region=None):
     """Find EBS snapshots older than the configured threshold. Uses pagination."""
+    if not region:
+        region = AWS_REGION
+        
     findings = []
     try:
-        ec2 = boto3.client("ec2", region_name=AWS_REGION)
+        ec2 = boto3.client("ec2", region_name=region)
         paginator = ec2.get_paginator("describe_snapshots")
         page_iterator = paginator.paginate(OwnerIds=["self"])
 
@@ -28,8 +31,9 @@ def scan_old_snapshots():
                         "id": snap["SnapshotId"],
                         "detail": f"{size_gb}GB snapshot, {age_days} days old ({snap['StartTime'].date()})",
                         "waste_usd": round(monthly_cost, 2),
-                        "region": AWS_REGION
+                        "region": region
                     })
+
 
         logger.info(f"Snapshot scan complete — {len(findings)} old snapshots found.")
     except Exception as e:

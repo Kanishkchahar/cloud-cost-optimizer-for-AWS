@@ -12,9 +12,9 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 from rich.panel import Panel
 
 from db.database import setup_db, save_scan, save_resource, save_alert
-from data_source import get_findings, get_ai_advice, USE_DEMO_DATA
+from data_source import get_findings, get_ai_advice
 from analyzer.cost_estimator import estimate_total, get_breakdown_by_type
-from analyzer.reporter import print_report, build_report_text, save_report_json
+from analyzer.reporter import print_report, build_report_text
 from actor.cleaner import cleanup_resource
 from notifier.budget_alert import check_budget, send_alert_email
 from config import BUDGET_THRESHOLD
@@ -33,10 +33,16 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def run_scan():
-    """Run scan using data_source (demo or real AWS based on USE_DEMO_DATA flag)."""
-    mode = "DEMO" if USE_DEMO_DATA else "AWS"
-    console.print(f"[bold blue]Running scan in {mode} mode...[/bold blue]")
+def run_scan(scan_id=None):
+    """Run scan against your real AWS account."""
+    console.print(f"[bold blue]Running scan in AWS mode...[/bold blue]")
+
+    findings = []
+    
+    def on_finding(batch):
+        if scan_id:
+            for f in batch:
+                save_resource(scan_id, f["type"], f["id"], f["detail"], f["waste_usd"], f["region"])
 
     with Progress(
         SpinnerColumn(),
@@ -44,11 +50,11 @@ def run_scan():
         BarColumn(),
         console=console,
     ) as progress:
-        task = progress.add_task(f"Scanning ({mode})...", total=1)
-        findings = get_findings()
+        task = progress.add_task(f"Scanning (AWS)...", total=1)
+        findings = get_findings(on_finding_cb=on_finding)
         progress.advance(task)
 
-    logger.info(f"Scan complete ({mode}): {len(findings)} resources found")
+    logger.info(f"Scan complete (AWS): {len(findings)} resources found")
     return findings
 
 
@@ -92,8 +98,16 @@ Examples:
 
     if args.scan:
         console.print()
-        findings = run_scan()
+        
+        # Initialize scan in DB early
+        scan_id = save_scan(0, 0)
+        
+        findings = run_scan(scan_id=scan_id)
         total = estimate_total(findings)
+        
+        # Update totals at the end
+        from db.database import update_scan_totals
+        update_scan_totals(scan_id, total, len(findings))
 
         # Print the report
         print_report(findings, total)
@@ -107,14 +121,6 @@ Examples:
                 bar_len = int(cost / total * 30) if total > 0 else 0
                 bar = "█" * bar_len
                 console.print(f"  [cyan]{svc:12}[/cyan] [red]{bar}[/red] ${cost:.2f}")
-
-        # Save to database
-        scan_id = save_scan(total, len(findings))
-        for f in findings:
-            save_resource(scan_id, f["type"], f["id"], f["detail"], f["waste_usd"], f["region"])
-
-        # Save JSON report
-        save_report_json(findings, total)
 
         # Budget check
         console.print()
@@ -147,8 +153,14 @@ Examples:
         if args.ai:
             console.print()
             console.print(Panel("[bold]🤖 Asking AI for recommendations...[/bold]", border_style="bright_magenta"))
-            report_text = build_report_text(findings, total)
             advice = get_ai_advice(report_text)
+            if advice and scan_id:
+                try:
+                    from db.database import update_scan_ai_advice
+                    update_scan_ai_advice(scan_id, advice)
+                    logger.info("AI advice saved to database.")
+                except Exception as e:
+                    logger.warning(f"Failed to save AI advice: {e}")
             console.print()
             console.print(Panel(advice, title="🤖 AI Recommendation", border_style="bright_magenta"))
 
@@ -168,8 +180,12 @@ Examples:
                 console.print()
                 success = 0
                 for f in findings:
-                    if cleanup_resource(f, dry_run=False):
-                        success += 1
+                    try:
+                        if cleanup_resource(f, dry_run=False):
+                            success += 1
+                    except Exception as e:
+                        logger.error(f"Cleanup failed for {f.get('id')}: {e}")
+                        console.print(f"[red]  Error cleaning up {f.get('id')}: {e}[/red]")
                 console.print(Panel(
                     f"[bold green]✅ Cleaned up {success}/{len(findings)} resources[/bold green]",
                     border_style="green"
