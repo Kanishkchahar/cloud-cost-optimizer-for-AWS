@@ -1,41 +1,41 @@
 # AWS Smart Cost Optimizer ☁️💰
 
-A comprehensive Python-based tool (CLI + Web Dashboard) that scans your AWS account for wasted and idle resources, estimates potential savings, and uses local AI (Ollama) to recommend cost-saving actions.
+A premium, Python-powered cloud intelligence platform (CLI + Web Dashboard) designed to detect wasted AWS resources, automate infrastructure management, and provide AI-driven cost-saving recommendations.
 
 ---
 
-## 🌟 Features
+## 🌟 Key Features
 
-- **🔍 Automated Scanning:** Finds idle/wasted resources including unattached EBS volumes, stopped EC2 instances, unused Elastic IPs, old snapshots, empty S3 buckets, incomplete S3 multipart uploads, and abandoned Lambda functions.
-- **⚡ Multithreaded Engine:** Powered by a high-performance, concurrent scanning engine that scans across all active AWS regions in parallel to reduce scan times by 80%.
-
-- **🚀 Live Infrastructure Management:** View both active and stopped services across your AWS environment, and perform live actions (Start, Stop, Reboot, Terminate) directly from the dashboard.
-- **📈 AWS Cost Explorer Integration:** Pulls live billing data from AWS Cost Explorer to show your exact monthly spend by service.
-- **💰 Cost Estimation:** Calculates exact monthly cost waste per resource based on AWS pricing.
-- **📊 Interactive Web Dashboard:** A beautiful, responsive AWS-style UI with skeleton loaders, real-time charts, filterable tables, and cost trends.
-- **⏰ Scheduled Auto-Scans:** Configure Windows Task Scheduler directly from the UI to run hourly, daily, or weekly background scans automatically.
-- **🤖 AI-Powered Advice:** Integrates with local AI models via Ollama (e.g., Phi-3, Llama 3) to analyze reports and provide actionable cost-saving advice in plain English.
-- **🚨 Budget Alerts:** Configurable threshold alerts with automated email notifications when your waste exceeds a defined budget.
-- **⚙️ Settings Management:** Update AWS credentials, budget thresholds, and email configurations directly from the UI.
-- **🗄️ Local Database:** Stores scan history and tracks your optimization trends over time using SQLite.
+- **🔍 Advanced Waste Detection:** Automatically scans for unattached EBS volumes, stopped EC2 instances, unused Elastic IPs, old snapshots, empty S3 buckets, and idle Lambda functions.
+- **⚡ Multithreaded Scanning:** High-performance engine that scans across multiple AWS regions in parallel, delivering results up to 80% faster.
+- **🚀 Live Infrastructure Management:** View and manage healthy, active, and stopped services (Start, Stop, Reboot, Terminate) directly from the dashboard.
+- **📊 Premium Glassmorphism UI:** A stunning, responsive web dashboard with animated particle backgrounds, real-time Chart.js visualizations, and skeleton loaders.
+- **🤖 Triple-AI Advisor:** 
+    *   **Local AI**: Integration with **Ollama** (Phi-3, Llama 3).
+    *   **Cloud AI**: Powered by **Groq** (LLaMA 3.3) and **Google Gemini** for high-speed, intelligent infrastructure analysis.
+    *   **Interactive AI Chat**: Chat directly with the AI advisor about your specific infrastructure waste and trends.
+- **📈 Comprehensive Analytics:** Service-level breakdown, monthly/annual savings projections, and severity distribution (High/Medium/Low).
+- **🚨 Budget Monitoring:** Visual gauge for budget tracking with automated email alerts (SMTP) when waste exceeds thresholds.
+- **⏰ Live Monitoring:** Toggle automated background scans with a countdown timer directly from the sidebar.
+- **🗄️ Scan History & Trends:** Full persistence using SQLite to track your cost optimization progress over time.
 
 ---
 
 ## 🛠️ Tech Stack
 
 - **Backend:** Python 3.10+, Flask, SQLite3
-- **AWS SDK:** Boto3
-- **Frontend:** HTML5, Vanilla CSS (Glassmorphism UI), Vanilla JavaScript, Chart.js
-- **AI Integration:** Ollama (Local AI)
-- **CLI Utilities:** Rich (for terminal formatting)
+- **AWS SDK:** Boto3 (EC2, S3, Lambda, Cost Explorer)
+- **Frontend:** HTML5, Vanilla CSS (Glassmorphism), Vanilla JS (ES6+), Chart.js
+- **AI Integration:** Groq API, Google Gemini API, Ollama (Local)
+- **CLI Formatting:** Rich
 
 ---
 
 ## 📋 Prerequisites
 
-1. **Python 3.10+** installed and added to your system PATH.
-2. **AWS Account & IAM Credentials** with read access (`ec2:Describe*`).
-3. **Ollama** installed locally (if you want to use the AI advisor feature).
+1. **Python 3.10+** installed.
+2. **AWS IAM Credentials** with `ReadOnlyAccess` (minimum) or specific permissions for cleanup (see [IAM Section](#-iam-permissions-required)).
+3. **API Keys** (Optional): Groq, Gemini, or Ollama for AI features.
 
 ---
 
@@ -52,88 +52,62 @@ A comprehensive Python-based tool (CLI + Web Dashboard) that scans your AWS acco
    pip install -r requirements.txt
    ```
 
-3. **Configure Environment Variables:**
-   Copy the example environment file and update it with your actual AWS credentials.
+3. **Configure Environment:**
    ```bash
    cp .env.example .env
    ```
-   Edit `.env`:
-   ```env
-   # AWS Credentials
-   AWS_ACCESS_KEY_ID=your_access_key
-   AWS_SECRET_ACCESS_KEY=your_secret_key
-   AWS_DEFAULT_REGION=ap-south-1
-   AWS_REGIONS=ap-south-1  # (Optional) Comma-separated list of target regions to scan
-
-
-   ```
-
-4. **(Optional) Setup Local AI:**
-   Install [Ollama](https://ollama.com/) and download a lightweight model:
-   ```bash
-   ollama pull phi3
-   ollama serve
-   ```
+   Update `.env` with your AWS keys and preferred AI provider (Groq/Gemini/Ollama).
 
 ---
 
 ## 💻 Usage
 
-### Web Dashboard
-The easiest way to interact with the optimizer is through the web dashboard.
-Run the following command or use the provided batch script:
+### Web Dashboard (Recommended)
+Launch the premium web interface:
 ```bash
 python main.py --dashboard
 ```
-*(On Windows, you can simply double-click `run_dashboard.bat`)*
-Then open your browser to `http://127.0.0.1:5000`
+*(On Windows, you can use `start_everything.bat`)*
+Access via: `http://127.0.0.1:5000`
 
 ### Command Line Interface (CLI)
-You can run scans directly from your terminal with rich formatting:
-
+Run quick scans directly in your terminal:
 ```bash
-# Basic scan - see what's wasted
+# Basic scan
 python main.py --scan
 
-# Scan + get AI recommendations
+# Scan with AI recommendations
 python main.py --scan --ai
 
-# Scan + dry-run cleanup (safe preview of what would be deleted)
+# Safe cleanup preview
 python main.py --scan --dry-run
 
-# Scan + actually execute cleanup (will prompt for confirmation)
+# Execute cleanup (requires confirmation)
 python main.py --scan --execute
 ```
-*(On Windows, you can double-click `run_scan.bat` for a basic scan)*
 
 ---
 
 ## 📁 Project Structure
 
 ```
-├── main.py                  # CLI & Web App Entry Point
-├── config.py                # Core configuration & thresholds
-├── .env                     # Secrets and Environment Config (Ignored)
-├── .env.example             # Template for Environment Config
-├── requirements.txt         # Python dependencies
-├── dashboard/               # Flask Web Application
-│   ├── app.py               # API Routes and Views
-│   ├── static/              # CSS/JS Assets (Glassmorphism UI)
-│   └── templates/           # HTML Views
-├── scanner/                 # AWS Boto3 Scanners (EBS, EC2, EIP, Snapshots, S3, Lambda)
-├── analyzer/                # Cost Estimators & AI Advisor Integrations
-├── actor/                   # Cleanup scripts & Instance Management
-├── notifier/                # Email alerting system
-├── db/                      # SQLite Database schemas and models
-├── docs/                    # Project Documentation
-└── tests/                   # Unit tests
+├── main.py                  # Entry Point (CLI & Web)
+├── config.py                # System Thresholds & Config
+├── .env                     # Secrets (Ignored)
+├── .env.example             # Template Config
+├── scanner/                 # Multi-service AWS Scanners
+├── analyzer/                # Cost Estimators & AI Integrations
+├── actor/                   # Infrastructure Management (Start/Stop/Delete)
+├── dashboard/               # Flask App & Glassmorphism Assets
+├── db/                      # SQLite Schema & persistence
+├── notifier/                # SMTP Email Alerting
+└── docs/                    # Presentation & Technical Guides
 ```
 
 ---
 
 ## 🔒 IAM Permissions Required
 
-To run the application against your real AWS account, the IAM user must have the following minimum permissions:
 ```json
 {
   "Version": "2012-10-17",
@@ -149,14 +123,8 @@ To run the application against your real AWS account, the IAM user must have the
         "ec2:DeleteVolume",
         "ec2:ReleaseAddress",
         "ec2:DeleteSnapshot",
-        "rds:Describe*",
-        "rds:StartDBInstance",
-        "rds:StopDBInstance",
-        "rds:RebootDBInstance",
-        "rds:DeleteDBInstance",
         "s3:ListAllMyBuckets",
         "s3:ListBucket",
-        "s3:ListBucketMultipartUploads",
         "lambda:ListFunctions",
         "cloudwatch:GetMetricStatistics",
         "ce:GetCostAndUsage"
@@ -170,7 +138,7 @@ To run the application against your real AWS account, the IAM user must have the
 ---
 
 ## 🤝 Contributing
-Contributions, issues, and feature requests are welcome!
+Contributions are welcome! Please open an issue or submit a pull request for any enhancements.
 
 ## 📝 License
-This project is open-source and available under the MIT License.
+Distributed under the MIT License.
